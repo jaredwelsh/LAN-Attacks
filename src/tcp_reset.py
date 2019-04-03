@@ -9,14 +9,8 @@ def reset_usage(exit_num=None):
     usg = "Run a TCP reset attack. Disconnects client from server by spoofing\n"
     usg += "a reset packet from the client to the server. This will cause the\n"
     usg += "server to drop packets from the client\n\n"
-    usg += "[h|help]\t\t: print usage\n"
-    usg += "[s|server]\targ\t: the IP address of the server\n"
-    usg += "[c|client]\targ\t: the IP address of the client\n"
-    usg += "[i|interface]\targ\t: the interface you are listening on\n"
-    usg += "[r|reset_count]\targ\t: the amount of spoofed messages you will send"
-    
+    usg += "Requires: Server/Client IP, Interface"
     print(usg)
-    sys.exit(exit_num) if exit_num else sys.exit()
 
 
 # run attack

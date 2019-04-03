@@ -1,9 +1,11 @@
 import functools
+from scapy.all import *
 
+# add multiple clients and victims
 
 class NetAttrs(object):
 
-    def __init__(self, mac, ip, port, name):
+    def __init__(self, mac=None, ip=None, port=None, name=None):
         self.mac = mac
         self.ip = ip
         self.port = port
@@ -29,12 +31,14 @@ class Client:
     }
 
     def __init__(self, attacks=-1):
-        self.cli = NetAttrs(None, None, None, 'Client')
-        self.vic = NetAttrs(None, None, None, 'Victim')
+        self.cli = NetAttrs(name='Client')
+        self.vic = NetAttrs(name='Victim')
+
+        self.victims = {}
 
         self.ethl = None
         self.ipl = None
-        self.tcpl = None
+        self.trnl = {'TCP': None, 'UDP': None}
 
         self.pcaps = None
         self.intface = None if attacks == -1 else input('Enter Interface: ')
@@ -83,13 +87,49 @@ class Client:
             print("IP address {} not found in pcap".format(ip))
             return None, None
 
-    def set_layers(self):
-        if self.vic.full and self.cli.full:
-            self.ethl = Ether(src=self.cli.mac, dst=self.vic.mac)
-            self.ipl = IP(src=self.cli.ip, dst=self.vic.ip)
-            self.tcpl = TCP(sport=self.cli.port, dport=self.vic.port)
+    def set_layer(self, layer, l3=None, typ=None):
+        cmd = None
+        if not typ:
+            cmd = input('Use existing values (y/n/s): ').lower()
+
+            while 's' in cmd:
+                print(self)
+                cmd = input('Use existing values (y/n/s): ').lower()
         else:
-            print("You must first set all fields")
+            self.update(self.typ_cmds[typ])
+
+        if cmd and 'n' in cmd:
+            cmd_list = ['both']
+            if layer >= 1:
+                cmd_list.append('mac')
+            if layer >= 2:
+                cmd_list.append('ip')
+            if layer >= 3:
+                cmd_list.append('port')
+            self.update(cmd_list, True)
+
+        try:
+            if not self.cli.mac or not self.vic.mac:
+                raise ValueError('MAC')
+            elif layer >= 1:
+                self.ethl = Ether(src=self.cli.mac, dst=self.vic.mac)
+
+            if not self.cli.ip or not self.vic.ip:
+                raise ValueError('IP')
+            elif layer >= 2:
+                self.ipl = IP(src=self.cli.ip, dst=self.vic.ip)
+
+            if not self.cli.port or not self.vic.port:
+                raise ValueError('PORT')
+            elif layer >= 3 and l3 == 'TCP':
+                self.tranl['TCP'] = TCP(
+                    sport=self.cli.port, dport=self.vic.port)
+            elif layer >= 3 and l3 == 'UDP':
+                self.tranl['UDP'] = UDP(
+                    sport=self.cli.port, dport=self.vic.port)
+
+        except ValueError as err:
+            print("ERROR You must first set {}".format(err))
 
     def gen_msg(self):
         if self.ethl and self.ipl and self.tcpl:
@@ -97,7 +137,7 @@ class Client:
             # self.tcp.ack =
             return self.ethl / self.ipl / self.tcpl
         else:
-            self.set_layers()
+            self.set_layer()
 
     def update(self, cmd_list, forced=False):
         d = {}

@@ -13,7 +13,6 @@ def replay_usage(exit_num=None):
     usg += "[f|file]\targ\t: pcap to read conversation from"
 
     print(usg)
-    sys.exit(exit_num) if exit_num else sys.exit()
 
 
 # spoof arp so that other networks recognize spoofed client
