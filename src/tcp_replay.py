@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
 import time
-import getopt
-import sys
+from .Client import Client, NetAttrs
 
 
 def replay_usage(exit_num=None):
     usg = ""
-    usg += "[h|help]\t\t: print usage\n"
-    usg += "[s|server]\targ\t: the IP address of the server\n"
-    usg += "[c|client]\targ\t: the IP address of the client\n"
-    usg += "[i|interface]\targ\t: the interface you are listening on\n"
-    usg += "[f|file]\targ\t: pcap to read conversation from"
+    usg += "Requires: Server/Client IP, PCAP Interface"
 
     print(usg)
 

@@ -1,11 +1,10 @@
-import functools
 from ast import literal_eval
 from scapy.all import *
 
 # add multiple clients and victims
 
 
-class NetAttrs(object):
+class NetAttrs:
 
     def __init__(self, mac=None, ip=None, port=None, name=None):
         self.mac = mac
@@ -28,7 +27,7 @@ class Client:
     typ_cmds = {
         -1: [],
         0:  ['all', 'ip', 'interface'],
-        1:  ['pcap', 'all', 'all', 'interface'],
+        1:  ['all', 'all', 'interface', 'pcap'],
         2:  ['all', 'mac', 'interface']
     }
 
@@ -60,6 +59,34 @@ class Client:
                 'attacks': self.attacks
             })
 
+    def run(self, func, src, dst, tcp=False):
+        func(self, self.victims[src], self.victims[dst])
+
+# use setattr for setting packet fields ie:
+# p = IP(src='192.168.1.1', dst='192.168.1.2') / TCP(sport=22, dport=33, flags="R")
+# print(p.seq) = 0
+# setattr(p, 'seq', 5)
+# print(p.seq) = 5
+    def add_options(self, p, options):
+        for k, v in options.items():
+            for k1, v1 in v.items():
+                setattr(p[k], k1, v1)
+
+    def gen_layers(self, layers=[], src=None, dst=None, tcp=False):
+        l0, l1, l2 = None, None, None
+        for layer in layers:
+            if layer == 0:
+                l0 = Ether(src=src.mac, dst=dst.mac)
+            elif layer == 1:
+                l1 = IP(src=src.ip, dst=dst.ip)
+            elif layer == 2:
+                l2 = TCP(sport=src.port, dport=dst.port) if tcp else UDP(
+                    sport=src.port, dport=dst.port)
+            elif layer == 3:
+                pass
+        
+        return l0, l1
+
     def imprt(self, path):
         with open(path, 'r') as f:
             t = f.read()
@@ -69,8 +96,25 @@ class Client:
             lambda x: x.haslayer(TCP) or x.haslayer(UDP),
             rdpcap(self.pcapf))
 
-    def add_vic(self, name):
-        self.victims[name] = NetAttrs(name=name)
+    def add_vic(self, names):
+        for name in names:
+            if name not in self.victims.keys():
+                self.victims[name] = NetAttrs(name=name)
+            else:
+                print('ERROR: Name {} already exists'.format(name))
+
+    # def add_vic(self, names):
+    #     i = 0
+    #     while i < len(names):
+    #         if 'set' == names[i]:
+    #             t, i = [names[i-1]], i+1
+    #             while names[i] in ('mac', 'ip', 'port', 'all'):
+    #                 t.append(names[i])
+    #                 i += 1
+    #             self.update(t)
+    #         else:
+    #             self.victims[names[i]] = NetAttrs(name=names[i])
+    #             i += 1
 
     def add_typ(self, attacks):
         if len(self.victims.keys()) < 2:
@@ -81,20 +125,24 @@ class Client:
             self.attacks.append(attacks)
             self.update(self.typ_cmds[attacks])
 
-    def pcap_get_attr(self, victim_list):
+    def pcap_set_attr(self, victim_list):
         for v in victim_list:
             for packet in self.pcaps:
-                if packet[IP].src == v.ip:
-                    v.mac = packet[Ether].src
+                if packet.haslayer(IP) and packet[IP].src == v.ip:
+                    setattr(v, 'mac', packet[Ether].src)
                     v.port = packet[TCP].sport if packet.haslayer(TCP) else packet[
                         UDP].sport
+                    print("IP address {} found".format(v.ip))
+                    return
 
-                elif packet[IP].dst == v.ip:
-                    v.mac = packet[Ether].dst
+                elif packet.haslayer(IP) and packet[IP].dst == v.ip:
+                    setattr(v, 'mac', packet[Ether].dst)
                     v.port = packet[TCP].dport if packet.haslayer(TCP) else packet[
                         UDP].dport
+                    print("IP address {} found".format(v.ip))
+                    return
             else:
-                print("IP address {} not found in pcap".format(v.ip))
+                print("ERROR: IP address {} not found in pcap".format(v.ip))
 
     def update(self, cmd_list, forced=False):
         cmd = cmd_list.pop(0) if cmd_list else ''
@@ -110,30 +158,38 @@ class Client:
                     self.victims[cmd]]
 
                 cmd = cmd_list.pop(0) if cmd_list else ''
-                if 'pcap' in cmd:
-                    if (
-                        not self.pcaps or
-                        'n' in input('Use existing Pcap (y/n): ').lower()
-                    ):
-                        self.pcapf = input("Enter Pcap path: ")
-                        self.pcaps = filter(
-                            lambda x: x.haslayer(TCP) or x.haslayer(UDP),
-                            rdpcap(self.pcapf))
+                if cmd in ('pcap', 'pcap:'):
+                    self.update(
+                        [j for sub in zip([n.name for n in na], ['ip'] * len(na)) for j in sub])
 
+                    if 'pcap:' in cmd:
+                        self.pcapf = cmd_list.pop(0)
+
+                    elif 'pcap' in cmd:
+                        if (
+                            not self.pcaps or
+                            'n' in input('Use existing Pcap (y/n): ').lower()
+                        ):
+                            self.pcapf = input("Enter Pcap path: ")
+
+                    self.pcaps = filter(lambda x: x.haslayer(TCP) or x.haslayer(UDP),
+                                        rdpcap(self.pcapf))
                     self.pcap_set_attr(na)
 
                     cmd = cmd_list.pop(0) if cmd_list else ''
                     continue
 
-                while cmd in ('mac', 'ip', 'port', 'all'):
+                while cmd in ('mac', 'ip', 'port', 'all', 'mac:', 'ip:', 'port:'):
                     for v in na:
                         if 'all' in cmd:
                             for j in ['mac', 'ip', 'port']:
-                                if forced or getattr(v, j) == None:
+                                if forced or not getattr(v, j):
                                     setattr(v, j, input(
                                         'Enter {} {}: '.format(v.name, j)))
                         else:
-                            if forced or getattr(v, cmd) == None:
+                            if ':' in cmd:
+                                setattr(v, cmd[:-1], cmd_list.pop(0))
+                            elif forced or not getattr(v, cmd):
                                 setattr(v, cmd, input(
                                     'Enter {} {}: '.format(v.name, cmd)))
 

