@@ -17,24 +17,28 @@ def tcp_reset(client, src, dst, tcp_rst_count=5):
     fin_found = False
 
     l0, l1 = client.gen_layers(layers=[0, 1], src=src, dst=dst)
-    l0.show()
-    l1.show()
     p = l0 / l1
     p.show()
-    client.add_options(p, {
-        'Ether': {'src' : '0a:00:27:00:00:01', 'dst': '0a:00:27:00:00:01'},
-        'IP' : {'src' : '192.168.1.3', 'dst': '192.168.1.4'}
+    client.add_options(
+        p, {
+            'Ether': {
+                'src': '0a:00:27:00:00:02',
+                'dst': '0a:00:27:00:00:01'
+            },
+            'IP': {
+                'src': '192.168.1.4',
+                'dst': '192.168.1.3'
+            }
         })
     p.show()
-
     # while not fin_found:
-    #     # capturing a packet with the source and destination provided
-    #     pack = sniff(iface=intface, count=1, lfilter=lambda x:
-    #                  x.haslayer(TCP) and
-    #                  x.haslayer(Raw) and
-    #                  x[IP].src == src.ip and
-    #                  x[IP].dst == dst.ip and
-    #                  len(x[TCP].payload) > 0)[0]
+        # # capturing a packet with the source and destination provided
+        # pack = sniff(iface=intface, count=1, lfilter=lambda x:
+                     # x.haslayer(TCP) and
+                     # x.haslayer(Raw) and
+                     # x[IP].src == src.ip and
+                     # x[IP].dst == dst.ip and
+                     # len(x[TCP].payload) > 0)[0]
 
     #     # calculating sequence numbers
     #     max_seq = pack[TCP].seq + tcp_rst_count * pack[TCP].window
