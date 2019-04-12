@@ -20,7 +20,7 @@ def usage(commands=True):
         usg += '\tshow\t\t\t\t\tprint out the current state\n'
         usg += '\tclear\t\t\t\t\tclear the terminal\n'
         usg += '\texit\t\t\t\t\texit the program'
-         # 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        # 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
     else:
         usg += 'This tool is built around a class called Client. This class contains a list of\n'
         usg += 'runnable attacks, a pcap file and the current interface. Additionally it has a\n'
@@ -52,24 +52,26 @@ def usage(commands=True):
 def main():
     typ_func = {
         -1: None,
-        'reset':  tcp_reset,
-        'replay':  tcp_replay,
-        'deauth':  None
+        'reset': tcp_reset,
+        'replay': tcp_replay,
+        'deauth': None
         # 2:  deauth
     }
 
     cmd = ''
     client = Client()
-    valid_opt = ['add', 'all', 'clear', 'exit', 'export', 'import', 'interface',
-                 'ip', 'mac', 'pcap', 'port', 'replay', 'reset', 'set', 'show',
-                 'help', 'run']
+    valid_opt = [
+        'add', 'all', 'clear', 'exit', 'export', 'import', 'interface', 'ip',
+        'mac', 'pcap', 'port', 'replay', 'reset', 'set', 'show', 'help', 'run'
+    ]
 
     while 'exit' not in cmd:
         cmd = input('Enter Command: ').lower().split()
-        if (not any(map(lambda x: x in ('add', 'set', 'import', 'export', 'run'), cmd))
-                and not all(map(lambda x: x in valid_opt, cmd))):
-            print("ERROR invalid command: {}".format(
-                ' '.join(list(filter(lambda x: x not in valid_opt, cmd)))))
+        if (not any(
+                map(lambda x: x in ('add', 'set', 'import', 'export', 'run'),
+                    cmd)) and not all(map(lambda x: x in valid_opt, cmd))):
+            print("ERROR invalid command: {}".format(' '.join(
+                list(filter(lambda x: x not in valid_opt, cmd)))))
             usage()
             continue
 
@@ -98,7 +100,7 @@ def main():
 
         elif '' in cmd:
             pass
-        
+
         elif 'export' in cmd:
             client.exprt(cmd[1])
 
