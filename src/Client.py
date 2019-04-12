@@ -82,8 +82,7 @@ class Client:
         func(self, self.victims[src], self.victims[dst])
 
 # use setattr for setting packet fields ie:
-# p = IP(src='192.168.1.1', dst='192.168.1.2') / TCP(sport=22, dport=33,
-# flags="R")
+# p = IP(src='192.168.1.1', dst='192.168.1.2')
 # print(p.seq) = 0
 # setattr(p, 'seq', 5)
 # print(p.seq) = 5
@@ -106,7 +105,7 @@ class Client:
             elif layer == 3:
                 pass
 
-        return l0, l1
+        return l0, l1, l2
 
     def add_vic(self, names):
         for name in names:
