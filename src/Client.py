@@ -26,15 +26,14 @@ class Client:
     typ_cmds = {
         -1: [],
         0: ['all', 'ip', 'interface'],
-        1: ['pcap', 'all', 'all', 'interface'],
+        1: ['pcap', 'all', 'pcap', 'interface'],
         2: ['all', 'mac', 'interface']
     }
 
     def __init__(self):
         self.victims = {}
 
-        self.pcapf = None
-        self.pcaps = None
+        self.pcaps = {}
         self.intface = None
 
         self.attacks = []
@@ -52,7 +51,8 @@ class Client:
     def exprt(self, path):
         t = {
             'victims': {},
-            'pcapf': self.pcapf,
+            # 'pcapf': self.pcapf,
+            'pcaps': self.pcaps.keys(),
             'intface': self.intface,
             'attacks': self.attacks
         }
@@ -61,6 +61,7 @@ class Client:
 
         with open(path, 'w') as f:
             f.write(str(t))
+        print('Export Successful')
 
     def imprt(self, path):
         with open(path, 'r') as f:
@@ -72,39 +73,29 @@ class Client:
                                                 ip=v1['ip'],
                                                 port=v1['port'],
                                                 name=v1['name'])
+
+            elif 'pcaps' in k:
+                for pcapf in v:
+                    self.pcaps[pcapf] = filter(
+                        lambda x: x.haslayer(TCP) or x.haslayer(UDP),
+                        rdpcap(pcapf))
             else:
                 setattr(self, k, v)
-        if self.pcapf:
-            self.pcaps = filter(lambda x: x.haslayer(TCP) or x.haslayer(UDP),
-                                rdpcap(self.pcapf))
+        print("Import Successful")
 
     def run(self, func, src, dst, tcp=False):
         func(self, self.victims[src], self.victims[dst])
-
-# use setattr for setting packet fields ie:
-# p = IP(src='192.168.1.1', dst='192.168.1.2')
-# print(p.seq) = 0
-# setattr(p, 'seq', 5)
-# print(p.seq) = 5
 
     def add_options(self, p, options):
         for k, v in options.items():
             for k1, v1 in v.items():
                 setattr(p[k], k1, v1)
 
-    def gen_layers(self, layers=[], src=None, dst=None, tcp=False):
-        l0, l1, l2 = None, None, None
-        for layer in layers:
-            if layer == 0:
-                l0 = Ether(src=src.mac, dst=dst.mac)
-            elif layer == 1:
-                l1 = IP(src=src.ip, dst=dst.ip)
-            elif layer == 2:
-                l2 = TCP(sport=src.port, dport=dst.port) if tcp else UDP(
-                    sport=src.port, dport=dst.port)
-            elif layer == 3:
-                pass
-
+    def gen_layers(self, src=None, dst=None, tcp=False):
+        l0 = Ether(src=src.mac, dst=dst.mac)
+        l1 = IP(src=src.ip, dst=dst.ip)
+        l2 = TCP(sport=src.port, dport=dst.port) if tcp else UDP(
+            sport=src.port, dport=dst.port)
         return l0, l1, l2
 
     def add_vic(self, names):
@@ -118,27 +109,28 @@ class Client:
         if len(self.victims.keys()) < 2:
             print('You must have at least 2 victims')
         while len(self.victims.keys()) < 2:
-            self.add_vic(input('Enter Victim Name: '))
+            self.add_vic([input('Enter Victim Name: ')])
         if attacks not in self.attacks:
             self.attacks.append(attacks)
+            self.attacks.sort()
             self.update(self.typ_cmds[attacks])
 
-    def pcap_set_attr(self, victim_list):
+    def pcap_set_attr(self, victim_list, pcap):
         for v in victim_list:
-            for packet in self.pcaps:
+            for packet in pcap:
                 if packet.haslayer(IP) and packet[IP].src == v.ip:
                     setattr(v, 'mac', packet[Ether].src)
                     v.port = packet[TCP].sport if packet.haslayer(
                         TCP) else packet[UDP].sport
                     print("IP address {} found".format(v.ip))
-                    return
+                    break
 
                 elif packet.haslayer(IP) and packet[IP].dst == v.ip:
                     setattr(v, 'mac', packet[Ether].dst)
                     v.port = packet[TCP].dport if packet.haslayer(
                         TCP) else packet[UDP].dport
                     print("IP address {} found".format(v.ip))
-                    return
+                    break
             else:
                 print("ERROR: IP address {} not found in pcap".format(v.ip))
 
@@ -152,10 +144,15 @@ class Client:
             if 'interface' in cmd and (forced or not self.intface):
                 self.intface = input('Enter Interface: ')
             elif 'pcap' in cmd and (forced or not self.pcaps):
-                self.pcapf = input('Enter Pcap path: ')
-                self.pcaps = filter(
-                    lambda x: x.haslayer(TCP) or x.haslayer(UDP),
-                    rdpcap(self.pcapf))
+                pcapf = input('Enter Pcap path: ')
+                if pcapf in self.pcaps.keys():
+                    print("Pcap Already Exists")
+                    cmd = cmd_list.pop(0) if cmd_list else ''
+                    continue
+                else:
+                    self.pcaps[pcapf] = filter(
+                        lambda x: x.haslayer(TCP) or x.haslayer(UDP),
+                        rdpcap(pcapf))
             elif cmd in 'all' or cmd in self.victims.keys():
                 na = self.victims.values() if 'all' in cmd else [
                     self.victims[cmd]
@@ -170,17 +167,15 @@ class Client:
                     ])
 
                     if 'pcap:' in cmd:
-                        self.pcapf = cmd_list.pop(0)
+                        pcapf = cmd_list.pop(0)
 
                     elif 'pcap' in cmd:
-                        if (not self.pcaps or 'n' in input(
-                                'Use existing Pcap (y/n): ').lower()):
-                            self.pcapf = input("Enter Pcap path: ")
+                        pcapf = input("Enter Pcap path: ")
 
-                    self.pcaps = filter(
+                    self.pcaps[pcapf] = filter(
                         lambda x: x.haslayer(TCP) or x.haslayer(UDP),
-                        rdpcap(self.pcapf))
-                    self.pcap_set_attr(na)
+                        rdpcap(pcapf))
+                    self.pcap_set_attr(na, self.pcaps[pcapf])
 
                     cmd = cmd_list.pop(0) if cmd_list else ''
                     continue
