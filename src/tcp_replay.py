@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import time
+from scapy.all import *
 from .Client import Client, NetAttrs
 
 

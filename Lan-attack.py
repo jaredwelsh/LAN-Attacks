@@ -59,10 +59,12 @@ def main():
     }
 
     cmd = ''
+    # prev_cmds = []
     client = Client()
     valid_opt = [
         'add', 'all', 'clear', 'exit', 'export', 'import', 'interface', 'ip',
-        'mac', 'pcap', 'port', 'replay', 'reset', 'set', 'show', 'help', 'run'
+        'mac', 'pcap', 'port', 'replay', 'reset', 'set', 'setup', 'show',
+        'help', 'run'
     ]
 
     while 'exit' not in cmd:
@@ -75,18 +77,19 @@ def main():
             usage()
             continue
 
+        # prev_cmds.insert(0, cmd)
+
         if 'run' in cmd:
             client.run(typ_func[cmd[1]], cmd[2], cmd[3])
-        elif 'reset' in cmd:
-            if 'help' in cmd:
-                reset_usage()
-            else:
+        elif 'setup' in cmd:
+            if 'reset' in cmd:
                 client.add_typ(0)
-        elif 'replay' in cmd:
-            if 'help' in cmd:
-                replay_usage()
-            else:
+            elif 'replay' in cmd:
                 client.add_typ(1)
+        elif 'reset' in cmd and 'help' in cmd:
+            reset_usage()
+        elif 'replay' in cmd and 'help' in cmd:
+            replay_usage()
         elif 'show' in cmd:
             if 'help' in cmd:
                 pass
