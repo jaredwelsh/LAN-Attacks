@@ -1,7 +1,16 @@
 from ast import literal_eval
 from scapy.all import *
 
-# add multiple clients and victims
+# def waiting(msg):
+#     global loading
+#     stdout.write(msg)
+#     while loading:
+#         for _ in range(5):
+#             stdout.write(".")
+#             stdout.flush()
+#             sleep(.5)
+#         stdout.write("\b" * 5 + " " * 5 + "\b" * 5)
+#         stdout.flush()
 
 
 class NetAttrs:

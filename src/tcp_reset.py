@@ -19,7 +19,9 @@ def tcp_reset(client, src, dst, tcp_rst_count=5):
     l0, l1, l2 = client.gen_layers(src=src, dst=dst, tcp=True)
     p = l0 / l1 / l2
     client.add_options(p, {'TCP': {'flags': 'R'}})
-    p.show()
+
+    print("SRC IP: {} DST IP: {}".format(src.ip, dst.ip))
+    print("INTFACE: {}".format(client.intface))
 
     while fin_found != 2:
         # capturing a packet with the source and destination provided
