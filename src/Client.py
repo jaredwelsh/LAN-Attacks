@@ -44,6 +44,8 @@ class Client:
             if k == 'victims':
                 for k1, v1 in self.victims.items():
                     ret += "\t{} : {}\n".format(k1, v1)
+            elif k == 'pcaps':
+                ret += "\tpcaps : {}\n".format(', '.join(self.pcaps.keys()))
             else:
                 ret += "\t{} : {}\n".format(k, v)
         return ret[:-1]
@@ -52,7 +54,7 @@ class Client:
         t = {
             'victims': {},
             # 'pcapf': self.pcapf,
-            'pcaps': self.pcaps.keys(),
+            'pcaps': [p for p in self.pcaps.keys()],
             'intface': self.intface,
             'attacks': self.attacks
         }
@@ -144,7 +146,8 @@ class Client:
             if 'interface' in cmd and (forced or not self.intface):
                 self.intface = input('Enter Interface: ')
             elif 'pcap' in cmd and (forced or not self.pcaps):
-                pcapf = input('Enter Pcap path: ')
+                pcapf = cmd_list.pop(0) if ':' in cmd else input(
+                    'Enter Pcap path: ')
                 if pcapf in self.pcaps.keys():
                     print("Pcap Already Exists")
                     cmd = cmd_list.pop(0) if cmd_list else ''
@@ -172,9 +175,10 @@ class Client:
                     elif 'pcap' in cmd:
                         pcapf = input("Enter Pcap path: ")
 
-                    self.pcaps[pcapf] = filter(
-                        lambda x: x.haslayer(TCP) or x.haslayer(UDP),
-                        rdpcap(pcapf))
+                    if pcapf not in self.pcaps.keys():
+                        self.pcaps[pcapf] = filter(
+                            lambda x: x.haslayer(TCP) or x.haslayer(UDP),
+                            rdpcap(pcapf))
                     self.pcap_set_attr(na, self.pcaps[pcapf])
 
                     cmd = cmd_list.pop(0) if cmd_list else ''
