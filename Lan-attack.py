@@ -81,20 +81,22 @@ def main():
 
         if 'run' in cmd:
             client.run(typ_func[cmd[1]], cmd[2], cmd[3])
+
         elif 'setup' in cmd:
             if 'reset' in cmd:
                 client.add_typ(0)
             elif 'replay' in cmd:
                 client.add_typ(1)
+
         elif 'reset' in cmd and 'help' in cmd:
             reset_usage()
+
         elif 'replay' in cmd and 'help' in cmd:
             replay_usage()
+
         elif 'show' in cmd:
-            if 'help' in cmd:
-                pass
-            else:
-                print(client)
+            print(client)
+
         elif 'add' in cmd:
             client.add_vic(cmd[1:])
 
@@ -102,7 +104,7 @@ def main():
             system('clear')
 
         elif '' in cmd:
-            pass
+            continue
 
         elif 'export' in cmd:
             client.exprt(cmd[1])

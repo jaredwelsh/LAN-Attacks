@@ -96,7 +96,7 @@ class Client:
     def gen_layers(self, src=None, dst=None, tcp=False):
         l0 = Ether(src=src.mac, dst=dst.mac)
         l1 = IP(src=src.ip, dst=dst.ip)
-        l2 = TCP(sport=src.port, dport=dst.port) if tcp else UDP(
+        l2 = TCP(sport=int(src.port), dport=int(dst.port)) if tcp else UDP(
             sport=src.port, dport=dst.port)
         return l0, l1, l2
 

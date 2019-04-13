@@ -24,7 +24,7 @@ def tcp_reset(client, src, dst, tcp_rst_count=5):
     while fin_found != 2:
         # capturing a packet with the source and destination provided
         pack = sniff(
-            iface=intface,
+            iface=client.intface,
             count=1,
             lfilter=lambda x: x.haslayer(TCP) and x.haslayer(Raw) and x[IP].src
             == src.ip and x[IP].dst == dst.ip and len(x[TCP].payload) > 0)[0]
