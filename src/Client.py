@@ -83,6 +83,16 @@ class Client:
                 setattr(self, k, v)
         print("Import Successful")
 
+    def remove(self, cmd_list):
+        typ = cmd_list.pop(0) if cmd_list else ''
+        cmd = cmd_list.pop(0) if cmd_list else ''
+        while cmd:
+            if 'victim' in typ:
+                del self.victims[cmd]
+            elif 'pcap' in typ:
+                del self.pcaps[cmd]
+            cmd = cmd_list.pop(0) if cmd_list else ''
+
     def run(self, func, src, dst, tcp=False):
         func(self, self.victims[src], self.victims[dst])
 

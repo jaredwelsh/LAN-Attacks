@@ -64,14 +64,16 @@ def main():
     valid_opt = [
         'add', 'all', 'clear', 'exit', 'export', 'import', 'interface', 'ip',
         'mac', 'pcap', 'port', 'replay', 'reset', 'set', 'setup', 'show',
-        'help', 'run'
+        'help', 'remove', 'run'
     ]
 
     while 'exit' not in cmd:
         cmd = input('Enter Command: ').lower().split()
         if (not any(
-                map(lambda x: x in ('add', 'set', 'import', 'export', 'run'),
-                    cmd)) and not all(map(lambda x: x in valid_opt, cmd))):
+                map(
+                    lambda x: x in
+                    ('add', 'set', 'import', 'export', 'run', 'remove'), cmd))
+                and not all(map(lambda x: x in valid_opt, cmd))):
             print("ERROR invalid command: {}".format(' '.join(
                 list(filter(lambda x: x not in valid_opt, cmd)))))
             usage()
@@ -93,6 +95,9 @@ def main():
 
         elif 'replay' in cmd and 'help' in cmd:
             replay_usage()
+
+        elif 'remove' in cmd:
+            client.remove(cmd[1:])
 
         elif 'show' in cmd:
             print(client)
