@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from src.tcp_replay import tcp_replay, replay_usage
 from src.tcp_reset import tcp_reset, reset_usage
-# from src.deauth import deauth, deauth_usage
+from src.dot11_deauth import dot11_deauth, deauth_usage
 from src.Client import Client
 from os import system
 
@@ -54,8 +54,7 @@ def main():
         -1: None,
         'reset': tcp_reset,
         'replay': tcp_replay,
-        'deauth': None
-        # 2:  deauth
+        'deauth': dot11_deauth
     }
 
     cmd = ''
@@ -89,7 +88,8 @@ def main():
                 client.add_typ(0)
             elif 'replay' in cmd:
                 client.add_typ(1)
-
+            elif 'deaut' in cmd:
+                client.add_typ(2)
         elif 'reset' in cmd and 'help' in cmd:
             reset_usage()
 
