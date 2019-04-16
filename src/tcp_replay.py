@@ -10,17 +10,26 @@ def replay_usage(exit_num=None):
     print(usg)
 
 
+def sniffer(src, dst):
+    return sniff(iface=intface, count=1, lfilter=lambda x: x.haslayer(TCP) and
+                 x[IP].src == src.ip and x[IP].dst == dst.ip and
+                 x[TCP].flags)[0]
+
+
+# perform triple handshake with destination
 def t_shake(client, src, dst):
     l0, l1, l2 = client.gen_layers(src=src, dst=dst, tcp=True)
     msg = l0 \ l1 \ l2
 
-    client.add_options(p, {'TCP': {'flags': 'S'}})
+    client.add_options(msg, {'TCP': {'flags': 'S'}})
 
     sendp(msg, iface=client.intface)
 
-    t = sniff(iface=intface, count=1, lfilter=lambda x: x.haslayer(TCP) and
-              x[IP].src == server.ip and x[IP].dst == client.ip and
-              x[TCP].flags)[0]
+    t = sniffer(src, dst)
+
+    client.add_options(msg, {'TCP': {'flags': 'SA'}})
+
+    t = sniffer(src, dst)
 
 
 # spoof arp so that other networks recognize spoofed client
@@ -50,7 +59,8 @@ def tcp_replay(client, src, dst):
         print(client)
         pcap = input('Enter pcap or show to see options: ')
 
-    s_to_d, d_to_s = pcap_filter(pcap, src.ip, dst.ip)
+    client.update(['pcap:', pcap])
+    s_to_d, d_to_s = pcap_filter(client.pcaps[pcap], src, dst)
 
     arp_poison(client, src, dst)
     t_shake(client, src, dst)

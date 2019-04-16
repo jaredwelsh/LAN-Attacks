@@ -157,7 +157,6 @@ class Client:
                 pcapf = cmd_list.pop(0) if ':' in cmd else input(
                     'Enter Pcap path: ')
                 if pcapf in self.pcaps.keys():
-                    print("Pcap Already Exists")
                     cmd = cmd_list.pop(0) if cmd_list else ''
                     continue
                 else:
