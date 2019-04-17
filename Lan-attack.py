@@ -2,6 +2,7 @@
 from src.tcp_replay import tcp_replay, replay_usage
 from src.tcp_reset import tcp_reset, reset_usage
 from src.dot11_deauth import dot11_deauth, deauth_usage
+from src.arp_poison import arp_poison, arp_usage
 from src.Client import Client
 from os import system
 
@@ -54,7 +55,8 @@ def main():
         -1: None,
         'reset': tcp_reset,
         'replay': tcp_replay,
-        'deauth': dot11_deauth
+        'deauth': dot11_deauth,
+        'arppoison': arp_poison
     }
 
     cmd = ''
@@ -86,15 +88,22 @@ def main():
         elif 'setup' in cmd:
             if 'reset' in cmd:
                 client.add_typ(0)
-            elif 'replay' in cmd:
+            if 'replay' in cmd:
                 client.add_typ(1)
-            elif 'deaut' in cmd:
+            if 'deauth' in cmd:
                 client.add_typ(2)
-        elif 'reset' in cmd and 'help' in cmd:
-            reset_usage()
+            if 'arppoison' in cmd:
+                client.add_typ(3)
 
-        elif 'replay' in cmd and 'help' in cmd:
-            replay_usage()
+        elif 'help' in cmd:
+            if 'reset' in cmd:
+                reset_usage()
+            elif 'replay' in cmd:
+                replay_usage()
+            elif 'deauth' in cmd:
+                deauth_usage
+            elif 'arppoison' in cmd:
+                arp_usage()
 
         elif 'remove' in cmd:
             client.remove(cmd[1:])

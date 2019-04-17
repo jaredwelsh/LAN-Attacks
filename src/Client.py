@@ -25,7 +25,8 @@ class Client:
         -1: [],
         0: ['all', 'ip', 'interface'],
         1: ['pcap', 'all', 'pcap', 'interface'],
-        2: ['all', 'mac', 'interface']
+        2: ['all', 'mac', 'interface'],
+        3: ['all', 'mac', 'ip', 'interface']
     }
 
     def __init__(self):

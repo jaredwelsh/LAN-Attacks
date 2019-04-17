@@ -1,6 +1,7 @@
 import time
 from scapy.all import *
 from .Client import Client, NetAttrs
+from .arp_poison import arp_poison
 
 
 def replay_usage(exit_num=None):
@@ -12,45 +13,23 @@ def replay_usage(exit_num=None):
 
 def sniffer(src, dst):
     return sniff(iface=intface, count=1, lfilter=lambda x: x.haslayer(TCP) and
-                 x[IP].src == src.ip and x[IP].dst == dst.ip and
-                 x[TCP].flags)[0]
+                 x[IP].src == dst.ip and x[IP].dst == src.ip)[0]
 
 
-# perform triple handshake with destination
-def t_shake(client, src, dst, s_to_d, d_to_s):
-    l0, l1, l2 = client.gen_layers(src=src, dst=dst, tcp=True)
-    msg = l0 / l1 / l2
+def rcv_valid(t, rcv):
+    return t.ip == rcv.ip
 
-    client.add_options(msg, {
-        'TCP': {
-            'flags': 'S',
-            'seq': s_to_d.pop(0)[TCP].seq
-            }})
 
-    sendp(msg, iface=client.intface)
-
-    t = sniffer(src, dst)
-
-    if 'SA' not in t.flags:
-        print('ERROR: SYN-ACK not received')
-        return False
-
-    msg = l0 / l1 / l2
-
-    client.add_options(msg, {
-        'TCP': {
-            'flags': 'A',
-            'seq': t[TCP].ack,
-            'ack': t[TCP].seq + 1
-            }})
+def replay(client, src, dst, s_to_d, d_to_s):
+    pos = 0
+    while s_to_d:
+        sendp(s_to_d.pop(0), iface=client.intface)
+        if not rcv_valid(sniffer(src, dst), d_to_s.pop(0)):
+            print('ERROR: unexpected recieve at position {}'.format(pos))
+            return False
+        pos += 1
 
     return True
-
-
-# spoof arp so that other networks recognize spoofed client
-def arp_poison(client, src, dst):
-    send(ARP(op=2, hwsrc=src.mac, psrc=src.ip, hwdst=dst.mac, pdst=dst.ip),
-         iface=client.intface)
 
 
 # filter pcap for tcp messages from client and server
@@ -78,5 +57,4 @@ def tcp_replay(client, src, dst):
     s_to_d, d_to_s = pcap_filter(client.pcaps[pcap], src, dst)
 
     arp_poison(client, src, dst)
-    if t_shake(client, src, dst, s_to_d, d_to_s):
-        continue
+    replay(client, src, dst, s_to_d, d_to_s)
