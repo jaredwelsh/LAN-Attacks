@@ -52,7 +52,6 @@ class Client:
     def exprt(self, path):
         t = {
             'victims': {},
-            # 'pcapf': self.pcapf,
             'pcaps': [p for p in self.pcaps.keys()],
             'intface': self.intface,
             'attacks': self.attacks
@@ -184,9 +183,13 @@ class Client:
                         pcapf = input("Enter Pcap path: ")
 
                     if pcapf not in self.pcaps.keys():
-                        self.pcaps[pcapf] = filter(
-                            lambda x: x.haslayer(TCP) or x.haslayer(UDP),
-                            rdpcap(pcapf))
+                        self.update(['pcap:', pcapf])
+                        self.pcaps[pcapf.split('/')[-1]] = {
+                            'path': pcapf,
+                            'value': filter(
+                                lambda x: x.haslayer(TCP) or x.haslayer(UDP),
+                                rdpcap(pcapf)
+                                )}
                     self.pcap_set_attr(na, self.pcaps[pcapf])
 
                     cmd = cmd_list.pop(0) if cmd_list else ''
@@ -212,5 +215,8 @@ class Client:
 
                     cmd = cmd_list.pop(0) if cmd_list else ''
                 continue
+            elif cmd not in self.victims.keys():
+                print('ERROR: victim {} does not exist'.format(cmd))
+                return
 
             cmd = cmd_list.pop(0) if cmd_list else ''

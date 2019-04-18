@@ -1,7 +1,7 @@
 from scapy.all import *
 
 
-def deauth_usg():
+def deauth_usage():
     usg = 'Runs a Deauth attack from the source to destination\n'
     usg += 'Requires: Source/Destination MAC and interface'
     print(usg)

@@ -45,14 +45,14 @@ def rcv_valid(t, rcv):
     return t.ip == rcv.ip
 
 
-def replay(client, src, dst):
+def replay(client, src, dst, conversation):
     global backlog_queue, lock, running
     pos = 0
     msg = conversation.pop(0)
     while conversation:
         if msg[IP].src == src.ip:
             sendp(msg, iface=client.intface)
-        elif msg[IP].src = dst.ip:
+        elif msg[IP].src == dst.ip:
             lock.acquire()
             if not rcv_valid(backlog_queue.pop(0), msg):
                 print('ERROR: unexpected recieve at position {}'.format(pos))
@@ -80,12 +80,12 @@ def pcap_filter(pcap, src, dst):
 def tcp_replay(client, src, dst):
     pcap = input('Enter pcap or show to see options: ')
     while 'show' == pcap:
-        print(client)
+        print("Pcaps : {}".format(', '.join(client.pcaps.keys())))
         pcap = input('Enter pcap or show to see options: ')
 
-    client.update(['pcap:', pcap])
+    client.update(['pcap:', pcap], forced=True)
     conversation = pcap_filter(client.pcaps[pcap], src, dst)
-    arp_poison(client, src, dst)
-    threading.Thread(target=sniffer, args=(src, dst,)).start()
-    if replay(client, src, dst, conversation):
-        print('Replay successful')
+    # arp_poison(client, src, dst)
+    # threading.Thread(target=sniffer, args=(src, dst,)).start()
+    # if replay(client, src, dst, conversation):
+        # print('Replay successful')

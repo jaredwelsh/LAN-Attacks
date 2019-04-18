@@ -6,6 +6,21 @@ from src.arp_poison import arp_poison, arp_usage
 from src.Client import Client
 from os import system
 
+client = Client()
+typ_func = {
+    -1: None,
+    'reset': tcp_reset,
+    'replay': tcp_replay,
+    'deauth': dot11_deauth,
+    'arppoison': arp_poison
+    # dnsspoof
+    # dhcp spoof/evil twin
+    # spanning tree protocol attack
+    # content addressable memory table overflow
+    # vlan hopping
+    # cisco discovery protocol
+}
+
 
 def usage(commands=True):
     usg = '\nPython-Based Network Lan Attacks Using Scapy\n\n'
@@ -50,18 +65,66 @@ def usage(commands=True):
     print(usg)
 
 
+def message_handler(cmd):
+    if 'run' in cmd:
+        client.run(typ_func[cmd[1]], cmd[2], cmd[3])
+
+    elif 'setup' in cmd:
+        if 'reset' in cmd:
+            client.add_typ(0)
+        if 'replay' in cmd:
+            client.add_typ(1)
+        if 'deauth' in cmd:
+            client.add_typ(2)
+        if 'arppoison' in cmd:
+            client.add_typ(3)
+
+    elif 'help' in cmd:
+        if 'reset' in cmd:
+            reset_usage()
+        elif 'replay' in cmd:
+            replay_usage()
+        elif 'deauth' in cmd:
+            deauth_usage
+        elif 'arppoison' in cmd:
+            arp_usage()
+
+    elif 'remove' in cmd:
+        client.remove(cmd[1:])
+
+    elif 'show' in cmd:
+        print(client)
+
+    elif 'add' in cmd:
+        client.add_vic(cmd[1:])
+
+    elif 'clear' in cmd:
+        system('clear')
+
+    elif '' in cmd:
+        return
+
+    elif 'export' in cmd:
+        client.exprt(cmd[1])
+
+    elif 'import' in cmd:
+        client.imprt(cmd[1])
+
+    elif 'set' in cmd:
+        client.update(cmd[1:], True)
+
+    elif 'help' in cmd:
+        usage(commands=False)
+
+    elif 'exit' in cmd:
+        return
+
+
 def main():
-    typ_func = {
-        -1: None,
-        'reset': tcp_reset,
-        'replay': tcp_replay,
-        'deauth': dot11_deauth,
-        'arppoison': arp_poison
-    }
+    # add support for scripts
 
     cmd = ''
     # prev_cmds = []
-    client = Client()
     valid_opt = [
         'add', 'all', 'clear', 'exit', 'export', 'import', 'interface', 'ip',
         'mac', 'pcap', 'port', 'replay', 'reset', 'set', 'setup', 'show',
@@ -81,59 +144,7 @@ def main():
             continue
 
         # prev_cmds.insert(0, cmd)
-
-        if 'run' in cmd:
-            client.run(typ_func[cmd[1]], cmd[2], cmd[3])
-
-        elif 'setup' in cmd:
-            if 'reset' in cmd:
-                client.add_typ(0)
-            if 'replay' in cmd:
-                client.add_typ(1)
-            if 'deauth' in cmd:
-                client.add_typ(2)
-            if 'arppoison' in cmd:
-                client.add_typ(3)
-
-        elif 'help' in cmd:
-            if 'reset' in cmd:
-                reset_usage()
-            elif 'replay' in cmd:
-                replay_usage()
-            elif 'deauth' in cmd:
-                deauth_usage
-            elif 'arppoison' in cmd:
-                arp_usage()
-
-        elif 'remove' in cmd:
-            client.remove(cmd[1:])
-
-        elif 'show' in cmd:
-            print(client)
-
-        elif 'add' in cmd:
-            client.add_vic(cmd[1:])
-
-        elif 'clear' in cmd:
-            system('clear')
-
-        elif '' in cmd:
-            continue
-
-        elif 'export' in cmd:
-            client.exprt(cmd[1])
-
-        elif 'import' in cmd:
-            client.imprt(cmd[1])
-
-        elif 'set' in cmd:
-            client.update(cmd[1:], True)
-
-        elif 'help' in cmd:
-            usage(commands=False)
-
-        elif 'exit' in cmd:
-            continue
+        message_handler(cmd)
 
 
 # main call
