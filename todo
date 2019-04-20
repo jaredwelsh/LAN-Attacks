@@ -1,0 +1,19 @@
+TODO:
+  Own Packet Creation
+  use raw socket
+
+To Implement:
+  ARP Poison
+  dns spoof
+  dhcp spoof/ evil twin
+  spanning tree protocol attack
+  content addressable memory table overflow
+  vlan hopping
+  cisco discovery protocol
+  ARP MITM
+
+To Test:
+  deauth
+
+To Fix:
+  TCP replay
