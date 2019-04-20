@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
-from src.tcp_replay import tcp_replay, replay_usage
-from src.tcp_reset import tcp_reset, reset_usage
-from src.dot11_deauth import dot11_deauth, deauth_usage
-from src.arp_poison import arp_poison, arp_usage
+from src.attacks import *
+from src.Packet import Packet
 from src.Client import Client
 from os import system
 

@@ -1,5 +1,5 @@
 from ast import literal_eval
-from scapy.all import *
+from packet import *
 
 
 class NetAttrs:
