@@ -85,7 +85,7 @@ def tcp_replay(client, src, dst):
 
     client.update(['pcap:', pcap], forced=True)
     conversation = pcap_filter(client.pcaps[pcap], src, dst)
-    # arp_poison(client, src, dst)
-    # threading.Thread(target=sniffer, args=(src, dst,)).start()
-    # if replay(client, src, dst, conversation):
-        # print('Replay successful')
+    arp_poison(client, src, dst)
+    threading.Thread(target=sniffer, args=(src, dst,)).start()
+    if replay(client, src, dst, conversation):
+        print('Replay successful')

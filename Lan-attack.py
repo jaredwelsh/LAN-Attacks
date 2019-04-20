@@ -13,12 +13,6 @@ typ_func = {
     'replay': tcp_replay,
     'deauth': dot11_deauth,
     'arppoison': arp_poison
-    # dnsspoof
-    # dhcp spoof/evil twin
-    # spanning tree protocol attack
-    # content addressable memory table overflow
-    # vlan hopping
-    # cisco discovery protocol
 }
 
 
