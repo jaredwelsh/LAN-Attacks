@@ -215,8 +215,5 @@ class Client:
 
                     cmd = cmd_list.pop(0) if cmd_list else ''
                 continue
-            elif cmd not in self.victims.keys():
-                print('ERROR: victim {} does not exist'.format(cmd))
-                return
 
             cmd = cmd_list.pop(0) if cmd_list else ''
