@@ -1,5 +1,6 @@
+from struct import pack
 class Ether():
-    EtherType = {'ipv4': b'0800', 'arp': b'0806', 'ipv6': b'86dd'}
+    EtherType = {'ipv4': 2048, 'arp': 2054, 'ipv6': 34525}
 
     def __init__(self,
                  src='FF:FF:FF:FF:FF:FF',
@@ -7,12 +8,17 @@ class Ether():
                  typ='ipv4'):
         self.src = src
         self.dst = dst
-        self.typ = EtherType[typ]
+        self.typ = self.EtherType[typ]
+
+    def __str__(self):
+        ret = 'Ether: \n'
+        for k, v in self.__dict__.items():
+            ret += '\t{}: {}\n'.format(k, v)
+        return ret[:-1]
 
     def gen_message(self):
-        return self.addr_to_bytes(self.dst) +\
-               self.addr_to_bytes(self.src) +\
-               self.typ
+        return pack('!12s12sH', self.addr_to_bytes(self.dst),
+                    self.addr_to_bytes(self.src), self.typ)
 
     def addr_to_bytes(self, addr):
         return b''.join([a.encode() for a in addr.split(':')])
