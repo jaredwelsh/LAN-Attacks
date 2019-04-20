@@ -17,8 +17,8 @@ class Ether():
         return ret[:-1]
 
     def gen_message(self):
-        return pack('!12s12sH', self.addr_to_bytes(self.dst),
+        return pack('!6s6sH', self.addr_to_bytes(self.dst),
                     self.addr_to_bytes(self.src), self.typ)
 
     def addr_to_bytes(self, addr):
-        return b''.join([a.encode() for a in addr.split(':')])
+        return bytes.fromhex(addr.replace(":", ""))
