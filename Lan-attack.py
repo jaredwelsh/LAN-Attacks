@@ -128,8 +128,6 @@ def message_handler(cmd):
 
 
 def main():
-    # add support for scripts
-
     cmd = ''
     # prev_cmds = []
 
