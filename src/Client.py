@@ -22,11 +22,11 @@ class NetAttrs:
 
 class Client:
     typ_cmds = {
-        -1: [],
-        0: ['all', 'ip', 'interface'],
-        1: ['pcap', 'all', 'pcap', 'interface'],
-        2: ['all', 'mac', 'interface'],
-        3: ['all', 'mac', 'ip', 'interface']
+        -1: [],                                     # invalid
+        0: ['all', 'ip', 'interface'],              # TCP Reset
+        1: ['pcap', 'all', 'pcap', 'interface'],    # TCP Replay
+        2: ['all', 'mac', 'interface'],             # Deauth
+        3: ['all', 'mac', 'ip', 'interface']        # Arp Poison
     }
 
     def __init__(self):
