@@ -10,7 +10,9 @@ class Ether():
         self.typ = EtherType[typ]
 
     def gen_message(self):
-        return self.to_bytes(self.dst) + self.to_bytes(self.src) + self.typ
+        return self.addr_to_bytes(self.dst) +\
+               self.addr_to_bytes(self.src) +\
+               self.typ
 
-    def to_bytes(self, addr):
+    def addr_to_bytes(self, addr):
         return b''.join([a.encode() for a in addr.split(':')])

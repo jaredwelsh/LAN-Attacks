@@ -34,6 +34,7 @@ class Client:
 
         self.pcaps = {}
         self.intface = None
+        self.socket = None
 
         self.attacks = []
 
