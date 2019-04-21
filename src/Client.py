@@ -35,7 +35,7 @@ class Client:
         self.pcaps = {}
         self.intface = None
         self.socket = None
-        # s = socket.socket(socket.AF_INET, socket.SOCK_RAW)
+        # s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW)
         # s.bind(('enp0s8', 0))
         self.attacks = []
 

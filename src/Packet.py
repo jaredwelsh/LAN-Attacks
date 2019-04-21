@@ -1,4 +1,4 @@
-from layers import *
+from layers import Ether, IPv4
 
 
 class Packet():
@@ -16,4 +16,4 @@ class Packet():
     def dummy_gen(self):
         self.l0 = Ether.Ether(dst="08:00:27:c6:d8:cf", src="08:00:27:7d:9b:7e")
         self.l1 = IPv4.IPv4(src="192.168.56.3", dst="192.168.56.5")
-        return self.l0 + self.l1
+        return self.l0.gen_message() + self.l1.gen_message()

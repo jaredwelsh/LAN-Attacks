@@ -20,7 +20,7 @@ class IPv4():
             self.ttl = ttl
             self.src = src
             self.dst = dst
-            self.proto = ProtoType[proto]
+            self.proto = self.ProtoType[proto]
             self.check = check
 
     def __str__(self):
@@ -34,9 +34,9 @@ class IPv4():
 
     def gen_message(self):
         return pack('!BBHHHBBH4s4s', ((self.ver << 4) + self.ihl), self.tos,
-                    self.len, self.id, self.frg, self.ttl,
-                    self.proto, self.check, addr_to_bytes(self.src),
-                    addr_to_byte(self.dst))
+                    self.leng, self.iden, self.frg, self.ttl,
+                    self.proto, self.check, self.addr_to_bytes(self.src),
+                    self.addr_to_bytes(self.dst))
 
     def addr_to_bytes(self, addr):
         return inet_aton(addr)
