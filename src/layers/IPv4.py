@@ -1,4 +1,5 @@
 from socket import inet_aton, IPPROTO_TCP, IPPROTO_UDP
+from struct import pack, unpack
 
 
 class IPv4():
