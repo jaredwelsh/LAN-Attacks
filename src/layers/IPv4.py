@@ -1,6 +1,8 @@
 from socket import inet_aton, inet_ntoa
 from struct import pack, unpack_from
 
+# add dscp, ecn, and, flags
+
 
 class IPv4():
     ProtoType = {'tcp': 6, 'udp': 17}
@@ -25,7 +27,7 @@ class IPv4():
 
     def __str__(self):
         ret = 'IPv4: \n'
-        for k, v in sorted(self.__dict__.items()):
+        for k, v in self.__dict__.items():
             ret += '\t{}: {}\n'.format(k, v)
         return ret[:-1]
 
