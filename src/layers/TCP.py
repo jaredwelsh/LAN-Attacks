@@ -1,10 +1,11 @@
-from struct import pack, unpack
+from struct import pack, pack_into, unpack, unpack_from
 
 
 class TCP():
 
     FlagType = {'F': 0x01, 'S': 0x02, 'P': 0x08, 'A': 0x10,
                 'U': 0x20, 'E': 0x40, 'C': 0x80}
+    OptionType = {}
 
     def __init__(self, src=0, dst=0, seq=0, ack=1, off=5, flg='', wndw=256,
                  check=None, urg=0, opt=None, from_bytes=None):
@@ -39,11 +40,18 @@ class TCP():
         self.wndw = unpck[5]
         self.check = unpck[6]
         self.urg = unpck[7]
+        if len(s) > 160:
+            unpack_from('', s, 160)
 
     def gen_message(self):
-        return pack('!HHIIHHHH', self.src, self.dst, self.seq, self.ack,
-                    (self.off << 12) + self.gen_flag_byte(), self.wndw,
-                    self.check, self.urg)
+        p = pack('!HHIIHHHH', self.src, self.dst, self.seq, self.ack,
+                 (self.off << 12) + self.gen_flag_byte(), self.wndw,
+                 self.check, self.urg)
+        if self.opt:
+            self.gen_off()
+            frmt, opts = self.gen_opt()
+            return pack_into(frmt, pack, 160, self.opt)
+        return p
 
     def gen_byte_flag(self, flags):
         ret = ''
@@ -58,3 +66,10 @@ class TCP():
             flg += self.FlagType[a]
         return flg
 
+    def gen_off(self):
+        if self.off == 5:
+            self.off += int(len(self.opt) / 8)
+
+    def gen_opt(self):
+        frmt = '!'
+        return frmt, opts
