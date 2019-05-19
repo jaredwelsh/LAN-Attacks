@@ -8,9 +8,9 @@ class Ether():
                  src='FF:FF:FF:FF:FF:FF',
                  dst='00:00:00:00:00:00',
                  typ='ipv4',
-                 byte=None):
-        if byte:
-            self.build_from_byte(byte)
+                 from_bytes=None):
+        if from_bytes:
+            self.build_from_byte(from_bytes)
         else:
             self.src = src
             self.dst = dst
@@ -22,10 +22,11 @@ class Ether():
             ret += '\t{}: {}\n'.format(k, v)
         return ret[:-1]
 
-    def build_from_byte(self, s):
-        self.dst = ';'.join(a + b for a, b in zip(s[:6:2], s[1:6:2]))
-        self.src = ';'.join(a + b for a, b in zip(s[7:12:2], s[7:12:2]))
-        self.typ = unpack(">H", s[12:])[0]
+    def build_from_byte(self, byte):
+        self.typ = unpack(">H", byte[12:])[0]
+        s = byte.hex()
+        self.dst = ':'.join([s[i:i+2] for i in range(0, 12, 2)])
+        self.src = ':'.join([s[i:i+2] for i in range(12, 24, 2)])
 
     def gen_message(self):
         return pack('!6s6sH', self.addr_to_bytes(self.dst),
