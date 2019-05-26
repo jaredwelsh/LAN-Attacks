@@ -18,9 +18,11 @@ class UDP():
     def __str__(self):
         ret = 'udp: \n'
         for k, v in self.__dict__.items():
-            if k != 'msg':
+            if k in ('check', 'iden'):
+                ret += '\t{}: {}\n'.format(k, hex(v))
+            elif k not in ('msg', 'layer'):
                 ret += '\t{}: {}\n'.format(k, v)
-        return ret[:-1] + '\n'
+        return ret[:-1]
 
     def type(self):
         return "UDP"
@@ -36,11 +38,11 @@ class UDP():
         self.msg = pack('!HHHH', self.src, self.dst, self.lng, self.check)
         return self.msg
 
-    def set_lng(self, l4):
-        self.lng += l4
+    def set_lng(self, l4_len):
+        self.lng += l4_len
 
     def set_check(self, p_head, l4, tlen):
-        self.check = 0
+        self.check = self.lng
         for part in (p_head, pack('!HHH', self.src, self.dst, self.lng), l4):
             for i in range(0, len(part), 2):
                 if (i+1) < len(part):
@@ -59,8 +61,8 @@ class UDP():
         hx = self.msg.hex()
         for i in range(0, len(hx), 2):
             ret += hx[i:i+2] + ' '
-            if (i+2) % 8 == 0 and (i+2) % 16 != 0 and i != 0:
+            if (i+2) % 16 == 0 and (i+2) % 32 != 0 and i != 0:
                 ret += ' '
-            elif (i+2) % 16 == 0 and i != 0:
+            elif (i+2) % 32 == 0 and i != 0:
                 ret += '\n'
         return ret

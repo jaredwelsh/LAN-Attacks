@@ -14,9 +14,9 @@ class stub():
     def __str__(self):
         ret = 'stub: \n'
         for k, v in self.__dict__.items():
-            if k != 'msg':
+            if k not in ('msg', 'layer'):
                 ret += '\t{}: {}\n'.format(k, v)
-        return ret[:-1] + '\n'
+        return ret[:-1]
 
     def type(self):
         return 'stub'
