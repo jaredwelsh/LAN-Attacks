@@ -2,25 +2,32 @@ from struct import pack, unpack
 
 
 class Ether():
-    EtherType = {'ipv4': 2048, 'arp': 2054, 'ipv6': 34525}
+    EtherType = {'IPv4': 2048, 'ARP': 2054, 'IPv6': 34525}
 
     def __init__(self,
                  src='FF:FF:FF:FF:FF:FF',
                  dst='00:00:00:00:00:00',
                  typ='ipv4',
                  from_bytes=None):
+        self.layer = 'l1'
         if from_bytes:
+            self.msg = from_bytes
             self.build_from_byte(from_bytes)
         else:
             self.src = src
             self.dst = dst
             self.typ = self.EtherType[typ]
+            self.msg = None
 
     def __str__(self):
         ret = 'Ether: \n'
         for k, v in self.__dict__.items():
-            ret += '\t{}: {}\n'.format(k, v)
-        return ret[:-1]
+            if k != 'msg':
+                ret += '\t{}: {}\n'.format(k, v)
+        return ret[:-1] + '\n'
+
+    def type(self):
+        return "Ether"
 
     def build_from_byte(self, byte):
         self.typ = unpack(">H", byte[12:])[0]
@@ -29,8 +36,25 @@ class Ether():
         self.src = ':'.join([s[i:i+2] for i in range(12, 24, 2)])
 
     def gen_message(self):
-        return pack('!6s6sH', self.addr_to_bytes(self.dst),
-                    self.addr_to_bytes(self.src), self.typ)
+        self.msg = pack('!6s6sH', self.addr_to_bytes(self.dst),
+                        self.addr_to_bytes(self.src), self.typ)
+        return self.msg
+
+    def size(self):
+        return 14
+
+    def raw_bytes(self):
+        if self.msg is None:
+            self.gen_message()
+        ret = ''
+        hx = self.msg.hex()
+        for i in range(0, len(hx), 2):
+            ret += hx[i:i+2] + ' '
+            if (i+2) % 8 == 0 and (i+2) % 16 != 0 and i != 0:
+                ret += ' '
+            elif (i+2) % 16 == 0 and i != 0:
+                ret += '\n'
+        return ret
 
     def addr_to_bytes(self, addr):
         return bytes.fromhex(addr.replace(":", ""))
