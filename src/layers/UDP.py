@@ -2,7 +2,6 @@ from struct import pack, unpack
 
 
 class UDP():
-
     def __init__(self, src=1024, dst=2048, lng=8, check=0, from_bytes=None):
         self.layer = 'l3'
         if from_bytes:
@@ -41,15 +40,17 @@ class UDP():
     def set_lng(self, l4_len):
         self.lng += l4_len
 
-    def set_check(self, p_head, l4, tlen):
-        self.check = self.lng
+    def set_check(self, p_head, l4):
+        self.check = 0
         for part in (p_head, pack('!HHH', self.src, self.dst, self.lng), l4):
             for i in range(0, len(part), 2):
-                if (i+1) < len(part):
-                    self.check += part[i] + (part[i+1] << 8)
-                elif (i+1) == len(part):
+                if (i + 1) < len(part):
+                    self.check += part[i] + (part[i + 1] << 8)
+                elif (i + 1) == len(part):
                     self.check += part[i]
         self.check = ((self.check + (self.check >> 16)) & 0xffff) ^ 0xffff
+        self.check = ((self.check >> 8) & 0xff) | ((self.check << 8) & 0xff00)
+        self.check -= self.lng
 
     def size(self):
         return self.lng
@@ -60,9 +61,9 @@ class UDP():
         ret = ''
         hx = self.msg.hex()
         for i in range(0, len(hx), 2):
-            ret += hx[i:i+2] + ' '
-            if (i+2) % 16 == 0 and (i+2) % 32 != 0 and i != 0:
+            ret += hx[i:i + 2] + ' '
+            if (i + 2) % 16 == 0 and (i + 2) % 32 != 0 and i != 0:
                 ret += ' '
-            elif (i+2) % 32 == 0 and i != 0:
+            elif (i + 2) % 32 == 0 and i != 0:
                 ret += '\n'
         return ret

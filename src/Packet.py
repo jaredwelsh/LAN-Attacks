@@ -69,13 +69,16 @@ class Packet():
             pass
 
         elif layer.type() == 'TCP':
-            pass
+            if not self.l4:
+                self.l4 = Raw.Raw(msg=b'')
+            p_head = self.l2.psuedo_header()
+            layer.gen_message()
+            layer.set_check(p_head, self.l4.msg)
 
         elif layer.type() == 'UDP':
             if not self.l4:
                 self.l4 = Raw.Raw(msg=b'')
-            p_head, tlen = self.l2.psuedo_header()
+            p_head = self.l2.psuedo_header()
             layer.set_lng(self.l4.size())
-            print(self.l4.msg.hex())
-            layer.set_check(p_head, self.l4.msg, tlen)
+            layer.set_check(p_head, self.l4.msg)
             layer.gen_message()
