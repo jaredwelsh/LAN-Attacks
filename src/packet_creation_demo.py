@@ -10,7 +10,6 @@ def main():
     ip = IPv4.IPv4(iden=0x0,
                    ttl=64,
                    frag=0x4000,
-                   proto='tcp',
                    dst='52.109.12.110',
                    src='192.168.1.24')
     tcp = TCP.TCP(src=49324,

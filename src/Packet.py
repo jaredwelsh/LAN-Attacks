@@ -63,6 +63,7 @@ class Packet():
                 print('Need Layer 1 and 3 to build IP header')
             else:
                 layer.set_tlen(self.l3.size() + self.l4.size())
+                layer.set_proto(self.l3.type())
                 layer.gen_message()
 
         elif layer.type() == 'ARP':

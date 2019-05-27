@@ -4,8 +4,9 @@ from struct import pack, unpack_from, unpack
 # add dscp, ecn, and, flags
 
 
+ProtoType = {'TCP': 6, 'UDP': 17, 'ICMP': 1, 'IGMP': 2, 'ENCAP': 41}
+
 class IPv4():
-    ProtoType = {'tcp': 6, 'udp': 17, 'icmp': 1, 'igmp': 2, 'encap': 41}
 
     def __init__(self,
                  iden=1000,
@@ -18,7 +19,7 @@ class IPv4():
                  ttl=255,
                  src='127.0.0.1',
                  dst='127.0.0.2',
-                 proto='tcp',
+                 proto='TCP',
                  check=0,
                  from_bytes=None):
         self.layer = 'l2'
@@ -34,7 +35,7 @@ class IPv4():
             self.iden = iden
             self.frag = frag
             self.ttl = ttl
-            self.proto = self.ProtoType[proto]
+            self.proto = ProtoType[proto]
             self.check = check
             self.src = src
             self.dst = dst
@@ -98,6 +99,9 @@ class IPv4():
 
     def set_tlen(self, tlen):
         self.tlen = tlen + self.ihl * 4
+
+    def set_proto(self, proto):
+        self.proto = ProtoType[proto]
 
     def gen_sum(self, halves):
         self.check = 0
