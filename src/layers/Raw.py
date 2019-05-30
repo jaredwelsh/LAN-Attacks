@@ -3,8 +3,7 @@ from struct import pack, unpack_from, unpack
 
 class Raw():
     def __init__(self, msg=None):
-        self.layer = 'l4'
-        self.msg = msg
+        self.msg = msg if msg else b''
 
     def __str__(self):
         ret = 'Raw: \n'

@@ -3,7 +3,6 @@ from struct import pack, unpack
 
 class UDP():
     def __init__(self, src=1024, dst=2048, lng=8, check=0, from_bytes=None):
-        self.layer = 'l3'
         if from_bytes:
             self.msg = from_bytes
             self.build_from_byte(from_bytes)

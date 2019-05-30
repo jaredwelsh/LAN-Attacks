@@ -1,19 +1,10 @@
 from struct import pack, pack_into, unpack, unpack_from
 
 
-# ADD OPTIONS/CALCULATE HEADER LENGTH
 class TCP():
 
-    FlagType = {
-        'F': 0x01,
-        'S': 0x02,
-        'P': 0x08,
-        'A': 0x10,
-        'U': 0x20,
-        'E': 0x40,
-        'C': 0x80
-    }
-    OptionType = {}
+    FlagType = {'F': 0x01, 'S': 0x02, 'P': 0x08, 'A': 0x10, 'U': 0x20,
+                'E': 0x40, 'C': 0x80}
 
     def __init__(self,
                  src=1024,
@@ -27,7 +18,6 @@ class TCP():
                  urg=0,
                  opt=None,
                  from_bytes=None):
-        self.layer = 'l3'
         if from_bytes:
             self.msg = from_bytes
             self.build_from_byte(from_bytes)
@@ -60,7 +50,7 @@ class TCP():
         return "TCP"
 
     def build_from_byte(self, byte):
-        unpck = unpack('>HHIIHHHH', byte)
+        unpck = unpack('>HHIIHHHH', byte[:20])
         self.src = unpck[0]
         self.dst = unpck[1]
         self.seq = unpck[2]
@@ -70,8 +60,10 @@ class TCP():
         self.wndw = unpck[5]
         self.check = unpck[6]
         self.urg = unpck[7]
-        if len(byte) > 160:
-            unpack_from('', byte, 160)
+        if self.lng > 5:
+            i = 20
+            while (i < self.lng * 4):
+                i += 1
 
     def gen_message(self):
         p = pack('!HHIIHHHH', self.src, self.dst, self.seq, self.ack,

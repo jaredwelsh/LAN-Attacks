@@ -6,6 +6,7 @@ from struct import pack, unpack_from, unpack
 
 ProtoType = {'TCP': 6, 'UDP': 17, 'ICMP': 1, 'IGMP': 2, 'ENCAP': 41}
 
+
 class IPv4():
 
     def __init__(self,
@@ -22,7 +23,6 @@ class IPv4():
                  proto='TCP',
                  check=0,
                  from_bytes=None):
-        self.layer = 'l2'
         if from_bytes:
             self.msg = from_bytes
             self.build_from_byte(from_bytes)
@@ -44,11 +44,8 @@ class IPv4():
     def __str__(self):
         ret = 'IPv4: \n'
         for k, v in self.__dict__.items():
-            if k in 'iden':
+            if k in ('iden', 'check'):
                 ret += '\t{}: {}\n'.format(k, hex(v))
-            elif k in 'check':
-                ret += '\t{}: {}\n'.format(
-                    k, hex(((v >> 8) & 0xff) | ((v << 8) & 0xff00)))
             elif k not in ('msg', 'layer'):
                 ret += '\t{}: {}\n'.format(k, v)
         return ret[:-1]
@@ -96,6 +93,9 @@ class IPv4():
     def psuedo_header(self):
         return pack('!4s4sxB', inet_aton(self.src), inet_aton(self.dst),
                     self.proto)
+
+    def size(self):
+        return self.ihl * 4
 
     def set_tlen(self, tlen):
         self.tlen = tlen + self.ihl * 4
