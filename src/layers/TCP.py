@@ -61,9 +61,37 @@ class TCP():
         self.check = unpck[6]
         self.urg = unpck[7]
         if self.lng > 5:
-            i = 20
-            while (i < self.lng * 4):
+            self.build_options(byte[20:])
+
+    def build_options(self, byte):
+        i = 0
+        self.optval = byte
+        self.opt = []
+        while i < len(byte):
+            if byte[i] == 0:
+                self.opt.append((0,))
+            elif byte[i] == 1:
+                self.opt.append((1,))
+            elif byte[i] == 2:
+                self.opt.append((2, 4, (byte[i+2] << 8) + byte[i+3]))
+                i += 3
+            elif byte[i] == 3:
+                self.opt.append((3, 3, byte[i+2]))
+                i += 2
+            elif byte[i] == 4:
+                self.opt.append((4, 2))
                 i += 1
+            elif byte[i] == 5:
+                size = byte[i+1]
+                vlen = (size - 2) / 2
+                self.opt.append((5, size, byte_shift_sum(byte[i+2:i+vlen+2]),
+                                byte_shift_sum(byte[i+vlen+2:i+(2*vlen)+2])))
+                i += (size - 1)
+            elif byte[i] == 8:
+                self.opt.append((8, 10, byte_shift_sum(byte[2+i:6+i]),
+                                byte_shift_sum(byte[6+i:10+i])))
+                i += 9
+            i += 1
 
     def gen_message(self):
         p = pack('!HHIIHHHH', self.src, self.dst, self.seq, self.ack,
@@ -152,3 +180,12 @@ class TCP():
 
     def size(self):
         return self.lng * 4
+
+
+def byte_shift_sum(byte):
+    sm = 0
+    pos = 8 * (len(byte) - 1)
+    for b in byte:
+        sm += (b << pos)
+        pos -= 8
+    return sm

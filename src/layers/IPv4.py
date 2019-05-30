@@ -74,7 +74,7 @@ class IPv4():
                       self.frag, self.ttl, self.proto)
         r_half = pack('!4s4s', inet_aton(self.src), inet_aton(self.dst))
         self.gen_sum([l_half, r_half])
-        self.msg = l_half + pack('<H', self.check) + r_half
+        self.msg = l_half + pack('>H', self.check) + r_half
         return self.msg
 
     def raw_bytes(self):
@@ -112,3 +112,4 @@ class IPv4():
                 elif (i + 1) == len(half):
                     self.check += half[i]
         self.check = ((self.check + (self.check >> 16)) & 0xffff) ^ 0xffff
+        self.check = ((self.check >> 8) | ((self.check & 0xff) << 8))
