@@ -41,9 +41,6 @@ class Ether():
                         self.addr_to_bytes(self.src), self.typ)
         return self.msg
 
-    def set_typ(self, typ):
-        self.typ = EtherType[typ]
-
     def size(self):
         return 14
 

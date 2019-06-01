@@ -10,7 +10,7 @@ ProtoType = {'TCP': 6, 'UDP': 17, 'ICMP': 1, 'IGMP': 2, 'ENCAP': 41}
 class IPv4():
 
     def __init__(self,
-                 iden=1000,
+                 iden=0xff,
                  ihl=5,
                  ver=4,
                  dscp=0,
@@ -69,8 +69,8 @@ class IPv4():
         self.dst = inet_ntoa(byte[16:20])
 
     def gen_message(self):
-        l_half = pack('!BBHHHBB', (self.ver << 4) + self.ihl,
-                      (self.dscp << 2) + self.ecn, self.tlen, self.iden,
+        l_half = pack('!BBHHHBB', (self.ver << 4) | self.ihl,
+                      (self.dscp << 2) | self.ecn, self.tlen, self.iden,
                       self.frag, self.ttl, self.proto)
         r_half = pack('!4s4s', inet_aton(self.src), inet_aton(self.dst))
         self.gen_sum([l_half, r_half])

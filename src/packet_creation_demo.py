@@ -2,7 +2,7 @@
 import Packet
 from layers import Ether, IPv4, UDP, TCP, Raw
 
-# check endianess for IPv4 and tcp/udp checksum
+
 def main():
     eth = Ether.Ether(src='f0:18:98:1c:cd:7c',
                       dst='00:00:0c:07:ac:00',

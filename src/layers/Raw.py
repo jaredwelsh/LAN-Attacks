@@ -16,10 +16,10 @@ class Raw():
         return 'Raw'
 
     def build_from_byte(self, byte):
-        pass
+        self.msg = byte
 
     def gen_message(self):
-        return self.msg if self.msg else b''
+        return self.msg
 
     def raw_bytes(self):
         if self.msg is None:

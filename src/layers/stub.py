@@ -1,20 +1,20 @@
 from struct import pack, unpack_from, unpack
 
+
 class stub():
-    def __init__(self, field1=None, field2=None, from_bytes=None):
-        self.layer = 'l4'
+    def __init__(self, src=None, dst=None, from_bytes=None):
         if from_bytes:
             self.msg = from_bytes
             self.build_from_byte(from_bytes)
         else:
-            self.field1 = field1
-            self.field2 = field2
+            self.src = src
+            self.dst = dst
             self.msg = None
 
     def __str__(self):
         ret = 'stub: \n'
         for k, v in self.__dict__.items():
-            if k not in ('msg', 'layer'):
+            if k not in 'msg':
                 ret += '\t{}: {}\n'.format(k, v)
         return ret[:-1]
 
@@ -23,11 +23,11 @@ class stub():
 
     def build_from_byte(self, byte):
         unpck = unpack('>HH', byte)
-        self.field1 = unpck[0]
-        self.field2 = unpck[1]
+        self.src = unpck[0]
+        self.dst = unpck[1]
 
     def gen_message(self):
-        self.msg = pack('>HH', self.field1, self.field2)
+        self.msg = pack('>HH', self.src, self.dst)
         return self.msg
 
     def raw_bytes(self):
@@ -43,5 +43,5 @@ class stub():
                 ret += '\n'
         return ret
 
-    def gen_lng(self):
+    def size(self):
         return 14
