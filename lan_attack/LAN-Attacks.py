@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-from src.attacks import *
-from src.Packet import Packet
+from src.attacks.arp_poison import *
+from src.attacks.dot11_deauth import *
+from src.attacks.tcp_replay import *
+from src.attacks.tcp_reset import *
 from src.Client import Client
 from os import system
 
